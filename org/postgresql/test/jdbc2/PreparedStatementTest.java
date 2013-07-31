@@ -431,7 +431,21 @@ public class PreparedStatementTest extends TestCase
         st.executeUpdate();
         st.close();
 
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            // Because XC does not support partition column to be updated
+            // lets distribute the table by round robin
+            conn.createStatement().execute("CREATE TEMP TABLE e$f$g(h varchar, e$f$g varchar) DISTRIBUTE BY ROUNDROBIN");
+        }
+        else
+        {
+        // END_PGXC
         conn.createStatement().execute("CREATE TEMP TABLE e$f$g(h varchar, e$f$g varchar) ");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         st = conn.prepareStatement("UPDATE e$f$g SET h = ? || e$f$g");
         st.setString(1, "a");
         st.executeUpdate();

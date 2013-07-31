@@ -34,7 +34,19 @@ public class ServerPreparedStmtTest extends TestCase
         con = TestUtil.openDB();
         Statement stmt = con.createStatement();
 
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            TestUtil.createTable(con, "testsps", "id integer, value boolean",
+                                 "DISTRIBUTE BY ROUNDROBIN", false);
+        }
+        else
+        {
+        // END_PGXC
         TestUtil.createTable(con, "testsps", "id integer, value boolean");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         stmt.executeUpdate("INSERT INTO testsps VALUES (1,'t')");
         stmt.executeUpdate("INSERT INTO testsps VALUES (2,'t')");

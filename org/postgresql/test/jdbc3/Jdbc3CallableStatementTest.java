@@ -40,6 +40,7 @@ public class Jdbc3CallableStatementTest extends TestCase
         // BEGIN_PGXC
         if (TestUtil.isPGXC())
         {
+            createBitTab = createBitTab + " DISRIBUTE BY ROUNDROBIN";
             stmt.execute("SET enforce_two_phase_commit TO false");
         }
         // END_PGXC
@@ -251,7 +252,19 @@ public class Jdbc3CallableStatementTest extends TestCase
         try
         {
 	        Statement stmt = con.createStatement();
+                // BEGIN_PGXC
+                if (TestUtil.isPGXC())
+                {
+                    stmt.execute("create temp table vartab( max_val text, min_val text) distribute by roundrobin");
+                }
+                else
+                {
+                // END_PGXC
 	        stmt.execute("create temp table vartab( max_val text, min_val text)");
+                // BEGIN_PGXC
+                }
+                // END_PGXC
+
 	        stmt.execute("insert into vartab values ('a','b')");
 	        boolean ret = stmt.execute("create or replace function "
 	   			 + "updatevarchar( in imax text, in imin text)  returns int as "
@@ -347,7 +360,12 @@ public class Jdbc3CallableStatementTest extends TestCase
             catch (Exception ex){}
         }
     }
-    private final String createBitTab = "create temp table bit_tab ( max_val boolean, min_val boolean, null_val boolean )";
+
+    // BEGIN_PGXC
+    // In XC we have to remove final from here since we need to add distribute by clause
+    // in the create table statement
+    private /*final*/ String createBitTab = "create temp table bit_tab ( max_val boolean, min_val boolean, null_val boolean )"
+    // END_PGXC
     private final String insertBitTab = "insert into bit_tab values (true,false,null)";
     
     public void testSetObjectBit() throws Throwable
@@ -407,7 +425,19 @@ public class Jdbc3CallableStatementTest extends TestCase
         try
         {
         Statement stmt = con.createStatement();
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            stmt.execute("create temp table longvarchar_tab ( t text, null_val text ) distribute by roundrobin");
+        }
+        else
+        {
+        // END_PGXC
         stmt.execute("create temp table longvarchar_tab ( t text, null_val text )");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         stmt.execute("insert into longvarchar_tab values ('testdata',null)");
         boolean ret = stmt.execute("create or replace function "
    			 + "longvarchar_proc( OUT pcn text, OUT nval text)  as "
@@ -567,7 +597,19 @@ public class Jdbc3CallableStatementTest extends TestCase
         try
         {
 	        Statement stmt = con.createStatement();
+		// BEGIN_PGXC
+		if (TestUtil.isPGXC())
+		{
+                    stmt.execute(createRealTab + " distribute by roundrobin");
+		}
+		else
+		{
+		// END_PGXC
 	        stmt.execute(createRealTab);
+		// BEGIN_PGXC
+		}
+		// END_PGXC
+
 	        boolean ret = stmt.execute(createUpdateReal);
 	        
 	        stmt.execute(insertRealTab);
@@ -620,7 +662,18 @@ public class Jdbc3CallableStatementTest extends TestCase
         try
         {
 	        Statement stmt = con.createStatement();
+		// BEGIN_PGXC
+		if (TestUtil.isPGXC())
+		{
+                    stmt.execute(createDecimalTab + " distribute by roundrobin");
+		}
+		else
+		{
+		// END_PGXC
 	        stmt.execute(createDecimalTab);
+		// BEGIN_PGXC
+		}
+		// END_PGXC
 	        boolean ret = stmt.execute(createUpdateFloat);
 	        stmt.close();
 	        PreparedStatement pstmt = con.prepareStatement("insert into decimal_tab values (?,?)");

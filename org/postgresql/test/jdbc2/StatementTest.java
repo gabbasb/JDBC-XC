@@ -29,8 +29,22 @@ public class StatementTest extends TestCase
         super.setUp();
 
         con = TestUtil.openDB();
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            // The function testMultiExecute() updates test_statement
+            TestUtil.createTempTable(con, "test_statement",
+                                     "i int", "DISTRIBUTE BY ROUNDROBIN");
+        }
+        else
+        {
+        // END_PGXC
         TestUtil.createTempTable(con, "test_statement",
                                  "i int");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         TestUtil.createTempTable(con, "escapetest",
                                  "ts timestamp, d date, t time, \")\" varchar(5), \"\"\"){a}'\" text ");
         TestUtil.createTempTable(con, "comparisontest","str1 varchar(5), str2 varchar(15)");

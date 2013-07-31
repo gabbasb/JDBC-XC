@@ -39,9 +39,30 @@ public class UpdateableResultTest extends TestCase
     protected void setUp() throws Exception
     {
         con = TestUtil.openDB();
+
+
+        // BEGIN_PGXC
+        // The function testCancelRowUpdates updates the id1 column of second table
+        // The function testUpdateStreams updates id column of stream table
+        // The function testUpdateable updates id couln of updateable table
+        if (TestUtil.isPGXC())
+        {
+            TestUtil.createTable(con, "updateable", "id int primary key, name text, notselected text, ts timestamp with time zone, intarr int[]",
+                                 "DISTRIBUTE BY ROUNDROBIN", true);
+            TestUtil.createTable(con, "second", "id1 int primary key, name1 text",
+                                 "DISTRIBUTE BY ROUNDROBIN", false);
+            TestUtil.createTable(con, "stream", "id int primary key, asi text, chr text, bin bytea",
+                                 "DISTRIBUTE BY ROUNDROBIN", false);
+        }
+        else
+        {
+        // END_PGXC
         TestUtil.createTable(con, "updateable", "id int primary key, name text, notselected text, ts timestamp with time zone, intarr int[]", true);
         TestUtil.createTable(con, "second", "id1 int primary key, name1 text");
         TestUtil.createTable(con, "stream", "id int primary key, asi text, chr text, bin bytea");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         // put some dummy data into second
         Statement st2 = con.createStatement();
