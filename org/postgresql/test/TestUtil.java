@@ -274,6 +274,15 @@ public class TestUtil
                                    String columns,
                                    boolean withOids) throws SQLException
     {
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            // by default distribute by clause will be null
+            createTable(con,table,columns,null,withOids);
+        }
+        else
+        {
+        // END_PGXC
         Statement st = con.createStatement();
         try
         {
@@ -288,6 +297,48 @@ public class TestUtil
             if (withOids && haveMinimumServerVersion(con,"8.0")) {
                 sql += " WITH OIDS";
             }
+
+            st.executeUpdate(sql);
+        }
+        finally
+        {
+            st.close();
+        }
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+    }
+
+    // BEGIN_PGXC
+    /*
+     * Helper - creates a test table for use by a test
+     */
+    public static void createTable(Connection con,
+                                   String table,
+                                   String columns,
+                                   String distributeBy,
+                                   boolean withOids) throws SQLException
+    {
+        Statement st = con.createStatement();
+        try
+        {
+            // Drop the table
+            dropTable(con, table);
+
+            // Now create the table
+            String sql = "CREATE TABLE " + table + " (" + columns + ") ";
+
+            // Starting with 8.0 oids may be turned off by default.
+            // Some tests need them, so they flag that here.
+            if (withOids && haveMinimumServerVersion(con,"8.0")) {
+                sql += " WITH OIDS";
+            }
+
+            if (distributeBy != null) {
+                sql += " ";
+                sql += distributeBy;
+            }
+
             st.executeUpdate(sql);
         }
         finally
@@ -295,6 +346,7 @@ public class TestUtil
             st.close();
         }
     }
+    // END_PGXC
 
     /**
      * Helper creates a temporary table
@@ -308,16 +360,20 @@ public class TestUtil
                                         String table,
                                         String columns) throws SQLException
     {
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            // by default distribute by clause will be null
+            createTempTable(con,table,columns,null);
+        }
+        else
+        {
+        // END_PGXC
         Statement st = con.createStatement();
         try
         {
             // Drop the table
             dropTable(con, table);
-
-            // BEGIN_PGXC
-            // Enforce use of COMMIT instead of 2PC for temporary objects
-            st.execute("SET enforce_two_phase_commit TO false");
-            // END_PGXC
 
             // Now create the table
             st.executeUpdate("create temp table " + table + " (" + columns + ")");
@@ -326,7 +382,48 @@ public class TestUtil
         {
             st.close();
         }
+        // BEGIN_PGXC
+        }
+        // END_PGXC
     }
+
+    // BEGIN_PGXC
+    /**
+     * Helper creates a temporary table
+     * @param con Connection
+     * @param table String
+     * @param columns String
+     * @param distributeBy String
+     * @throws SQLException
+     */
+
+    public static void createTempTable( Connection con,
+                                        String table,
+                                        String columns,
+                                        String distributeBy) throws SQLException
+    {
+        Statement st = con.createStatement();
+        try
+        {
+            // Drop the table
+            dropTable(con, table);
+
+            // Enforce use of COMMIT instead of 2PC for temporary objects
+            st.execute("SET enforce_two_phase_commit TO false");
+
+            // Now create the table
+            if (distributeBy != null) {
+                st.executeUpdate("create temp table " + table + " (" + columns + ") " + distributeBy);
+            } else {
+                st.executeUpdate("create temp table " + table + " (" + columns + ")");
+            }
+        }
+        finally
+        {
+            st.close();
+        }
+    }
+    // END_PGXC
 
     /**
      * Helper creates an enum type
