@@ -26,7 +26,16 @@ public class Jdbc4TestSuite extends TestSuite
         Class.forName("org.postgresql.Driver");
         TestSuite suite = new TestSuite();
         
+        // BEGIN_PGXC
+        // PGXC does not support large objects, so skip tests
+        if (!TestUtil.isPGXC())
+        {
+        // END_PGXC
         suite.addTestSuite(LOBTest.class);
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         suite.addTestSuite(DatabaseMetaDataTest.class);
         suite.addTestSuite(ArrayTest.class);
         suite.addTestSuite(ConnectionTest.class);

@@ -76,8 +76,16 @@ public class Jdbc2TestSuite extends TestSuite
         suite.addTestSuite(DatabaseEncodingTest.class);
 
         // Fastpath/LargeObject
+        // BEGIN_PGXC
+        // PGXC does not support large objects, skip tests for large objects
+        if (!TestUtil.isPGXC())
+        {
+        // END_PGXC
         suite.addTestSuite(BlobTest.class);
         suite.addTestSuite(OID74Test.class);
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         suite.addTestSuite(UpdateableResultTest.class );
 

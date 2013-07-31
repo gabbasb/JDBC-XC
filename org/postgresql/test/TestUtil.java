@@ -118,6 +118,16 @@ public class TestUtil
         return Integer.parseInt(System.getProperty("loglevel", "0"));
     }
 
+    // BEGIN_PGXC
+    /*
+     * Returns whether the tests are being run for XC
+     */
+    public static boolean isPGXC()
+    {
+        return System.getProperty("PGXC").equalsIgnoreCase("true");
+    }
+    // END_PGXC
+
     /*
      * Returns the binary transfer mode to use
      */

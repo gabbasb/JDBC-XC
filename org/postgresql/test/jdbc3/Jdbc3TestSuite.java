@@ -43,11 +43,30 @@ public class Jdbc3TestSuite extends TestSuite
             ex.printStackTrace();
         }
         
+        // BEGIN_PGXC
+        // PGXC does not support savepoints, so skip tests for savepoints
+        if (!TestUtil.isPGXC())
+        {
+        // END_PGXC
         suite.addTestSuite(Jdbc3SavepointTest.class);
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         suite.addTestSuite(TypesTest.class);
         suite.addTestSuite(ResultSetTest.class);
         suite.addTestSuite(ParameterMetaDataTest.class);
+
+        // BEGIN_PGXC
+        // PGXC does not support large objects, so skip tests
+        if (!TestUtil.isPGXC())
+        {
+        // END_PGXC
         suite.addTestSuite(Jdbc3BlobTest.class);
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         suite.addTestSuite(DatabaseMetaDataTest.class);
 		suite.addTestSuite(SendRecvBufferSizeTest.class);
         suite.addTestSuite(StringTypeParameterTest.class);
