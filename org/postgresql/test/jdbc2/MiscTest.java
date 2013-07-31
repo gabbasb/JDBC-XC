@@ -97,6 +97,14 @@ public class MiscTest extends TestCase
     {
         Connection con = TestUtil.openDB();
         Statement stmt = con.createStatement();
+
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            stmt.execute("SET enforce_two_phase_commit TO false");
+        }
+        // END_PGXC
+
         stmt.execute("CREATE TEMP TABLE t(a int primary key)");
         SQLWarning warning = stmt.getWarnings();
         // We should get a warning about primary key index creation

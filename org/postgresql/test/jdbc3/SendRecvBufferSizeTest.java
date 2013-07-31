@@ -27,6 +27,12 @@ public class SendRecvBufferSizeTest extends TestCase {
 		
         _conn = TestUtil.openDB();
         Statement stmt = _conn.createStatement();
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            stmt.execute("SET enforce_two_phase_commit TO false");
+        }
+        // END_PGXC
         stmt.execute("CREATE TEMP TABLE hold(a int)");
         stmt.execute("INSERT INTO hold VALUES (1)");
         stmt.execute("INSERT INTO hold VALUES (2)");

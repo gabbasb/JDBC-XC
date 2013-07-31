@@ -38,6 +38,18 @@ public class PreparedStatementTest extends TestCase
         TestUtil.createTable(conn, "streamtable", "bin bytea, str text");
         TestUtil.createTable(conn, "texttable", "ch char(3), te text, vc varchar(3)");
         TestUtil.createTable(conn, "intervaltable", "i interval");
+        // BEGIN_PGXC
+        // PGXC cannot prepare a transaction invloving temp tables
+        // and INSERT uses prepare transaction. This class inserts
+        // into a temp table in every test case hence we have to set
+        // enforce_two_phase_commit TO false here
+        if (TestUtil.isPGXC())
+        {
+            Statement st = conn.createStatement();
+            st.execute("SET enforce_two_phase_commit TO false");
+            st.close();
+        }
+        // END_PGXC
     }
 
     protected void tearDown() throws SQLException

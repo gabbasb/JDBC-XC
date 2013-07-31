@@ -50,6 +50,16 @@ public class BatchExecuteTest extends TestCase
         // Generally recommended with batch updates. By default we run all
         // tests in this test case with autoCommit disabled.
         con.setAutoCommit(false);
+
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            // PGXC cannot prepare a transaction invloving temp tables
+            // This batch of tests has some temp tables hence we have to set
+            // enforce_two_phase_commit TO false here
+            stmt.execute("SET enforce_two_phase_commit TO false");
+        }
+        // END_PGXC
     }
 
     // Tear down the fixture for this test case.

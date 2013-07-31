@@ -37,6 +37,12 @@ public class Jdbc3CallableStatementTest extends TestCase
     {
         con = TestUtil.openDB();
         Statement stmt = con.createStatement ();
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            stmt.execute("SET enforce_two_phase_commit TO false");
+        }
+        // END_PGXC
         stmt.execute("create temp table numeric_tab (MAX_VAL NUMERIC(30,15), MIN_VAL NUMERIC(30,15), NULL_VAL NUMERIC(30,15) NULL)");
         stmt.execute("insert into numeric_tab values ( 999999999999999,0.000000000000001, null)");
         stmt.execute("CREATE OR REPLACE FUNCTION myiofunc(a INOUT int, b OUT int) AS 'BEGIN b := a; a := 1; END;' LANGUAGE plpgsql");

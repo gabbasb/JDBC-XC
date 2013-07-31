@@ -25,6 +25,12 @@ public class UUIDTest extends TestCase {
     protected void setUp() throws Exception {
         _conn = TestUtil.openDB();
         Statement stmt = _conn.createStatement();
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            stmt.execute("SET enforce_two_phase_commit TO false");
+        }
+        // END_PGXC
         stmt.execute("CREATE TEMP TABLE uuidtest(id uuid)");
         stmt.close();
     }
