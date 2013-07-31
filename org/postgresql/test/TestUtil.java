@@ -314,6 +314,11 @@ public class TestUtil
             // Drop the table
             dropTable(con, table);
 
+            // BEGIN_PGXC
+            // Enforce use of COMMIT instead of 2PC for temporary objects
+            st.execute("SET enforce_two_phase_commit TO false");
+            // END_PGXC
+
             // Now create the table
             st.executeUpdate("create temp table " + table + " (" + columns + ")");
         }
