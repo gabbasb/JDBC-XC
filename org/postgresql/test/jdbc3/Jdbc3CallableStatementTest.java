@@ -364,7 +364,7 @@ public class Jdbc3CallableStatementTest extends TestCase
     // BEGIN_PGXC
     // In XC we have to remove final from here since we need to add distribute by clause
     // in the create table statement
-    private /*final*/ String createBitTab = "create temp table bit_tab ( max_val boolean, min_val boolean, null_val boolean )"
+    private /*final*/ String createBitTab = "create temp table bit_tab ( max_val boolean, min_val boolean, null_val boolean )";
     // END_PGXC
     private final String insertBitTab = "insert into bit_tab values (true,false,null)";
     
