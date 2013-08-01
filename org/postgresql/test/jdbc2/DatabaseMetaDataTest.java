@@ -211,8 +211,20 @@ public class DatabaseMetaDataTest extends TestCase
             return ;
 
         Connection con1 = TestUtil.openDB();
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            TestUtil.createTable( con1, "pkt", "a int not null, b int not null, CONSTRAINT pkt_pk_a PRIMARY KEY (a), CONSTRAINT pkt_un_b UNIQUE (b)", "DISTRIBUTE BY REPLICATION", false);
+            TestUtil.createTable( con1, "fkt", "c int, d int, CONSTRAINT fkt_fk_c FOREIGN KEY (c) REFERENCES pkt(b)", "DISTRIBUTE BY REPLICATION", false);
+        }
+        else
+        {
+        // END_PGXC
         TestUtil.createTable( con1, "pkt", "a int not null, b int not null, CONSTRAINT pkt_pk_a PRIMARY KEY (a), CONSTRAINT pkt_un_b UNIQUE (b)");
         TestUtil.createTable( con1, "fkt", "c int, d int, CONSTRAINT fkt_fk_c FOREIGN KEY (c) REFERENCES pkt(b)");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         DatabaseMetaData dbmd = con.getMetaData();
         ResultSet rs = dbmd.getImportedKeys("", "", "fkt");
@@ -266,13 +278,29 @@ public class DatabaseMetaDataTest extends TestCase
     public void testForeignKeys() throws Exception
     {
         Connection con1 = TestUtil.openDB();
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            TestUtil.createTable( con1, "people", "id int4 primary key, name text", "DISTRIBUTE BY REPLICATION", false);
+            TestUtil.createTable( con1, "policy", "id int4 primary key, name text", "DISTRIBUTE BY REPLICATION", false);
+
+            TestUtil.createTable( con1, "users", "id int4 primary key, people_id int4, policy_id int4," +
+                                  "CONSTRAINT people FOREIGN KEY (people_id) references people(id)," +
+                                  "constraint policy FOREIGN KEY (policy_id) references policy(id)",
+                                  "DISTRIBUTE BY REPLICATION", false);
+        }
+        else
+        {
+        // END_PGXC
         TestUtil.createTable( con1, "people", "id int4 primary key, name text" );
         TestUtil.createTable( con1, "policy", "id int4 primary key, name text" );
 
         TestUtil.createTable( con1, "users", "id int4 primary key, people_id int4, policy_id int4," +
                               "CONSTRAINT people FOREIGN KEY (people_id) references people(id)," +
                               "constraint policy FOREIGN KEY (policy_id) references policy(id)" );
-
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         DatabaseMetaData dbmd = con.getMetaData();
         assertNotNull(dbmd);

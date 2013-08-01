@@ -48,11 +48,11 @@ public class UpdateableResultTest extends TestCase
         if (TestUtil.isPGXC())
         {
             TestUtil.createTable(con, "updateable", "id int primary key, name text, notselected text, ts timestamp with time zone, intarr int[]",
-                                 "DISTRIBUTE BY ROUNDROBIN", true);
+                                 "DISTRIBUTE BY REPLICATION", true);
             TestUtil.createTable(con, "second", "id1 int primary key, name1 text",
-                                 "DISTRIBUTE BY ROUNDROBIN", false);
+                                 "DISTRIBUTE BY REPLICATION", false);
             TestUtil.createTable(con, "stream", "id int primary key, asi text, chr text, bin bytea",
-                                 "DISTRIBUTE BY ROUNDROBIN", false);
+                                 "DISTRIBUTE BY REPLICATION", false);
         }
         else
         {
