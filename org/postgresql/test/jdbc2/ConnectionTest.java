@@ -217,15 +217,46 @@ public class ConnectionTest extends TestCase
 
         assertEquals(defaultLevel, con.getTransactionIsolation());
 
+        // BEGIN_PGXC
+        // PGXC does not support serializable transactions
+        if (TestUtil.isPGXC())
+        {
+            con.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+            assertEquals(Connection.TRANSACTION_REPEATABLE_READ,
+                         con.getTransactionIsolation());
+        }
+        else
+        {
+        // END_PGXC
         con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         assertEquals(Connection.TRANSACTION_SERIALIZABLE,
                      con.getTransactionIsolation());
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         assertEquals(Connection.TRANSACTION_READ_COMMITTED, con.getTransactionIsolation());
 
         // Test if a change of isolation level before beginning the
         // transaction affects the isolation level inside the transaction.
+        // BEGIN_PGXC
+        // PGXC does not support serializable transactions
+        if (TestUtil.isPGXC())
+        {
+            con.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+            assertEquals(Connection.TRANSACTION_REPEATABLE_READ,
+                         con.getTransactionIsolation());
+            con.setAutoCommit(false);
+            assertEquals(Connection.TRANSACTION_REPEATABLE_READ,
+                         con.getTransactionIsolation());
+            con.setAutoCommit(true);
+            assertEquals(Connection.TRANSACTION_REPEATABLE_READ,
+                         con.getTransactionIsolation());
+        }
+        else
+        {
+        // END_PGXC
         con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         assertEquals(Connection.TRANSACTION_SERIALIZABLE,
                      con.getTransactionIsolation());
@@ -235,6 +266,10 @@ public class ConnectionTest extends TestCase
         con.setAutoCommit(true);
         assertEquals(Connection.TRANSACTION_SERIALIZABLE,
                      con.getTransactionIsolation());
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         con.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         assertEquals(Connection.TRANSACTION_READ_COMMITTED,
                      con.getTransactionIsolation());
