@@ -47,12 +47,23 @@ public class ResultSetTest extends TestCase
 
         TestUtil.createTable(con, "testint", "a int");
         stmt.executeUpdate("INSERT INTO testint VALUES (12345)");
-
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            TestUtil.createTable(con, "testbool", "a boolean, i serial");
+            TestUtil.createTable(con, "testboolstring", "a varchar(30), i serial");
+        }
+        else
+        {
+        // END_PGXC
         TestUtil.createTable(con, "testbool", "a boolean");
 
         //TestUtil.createTable(con, "testbit", "a bit");
 
         TestUtil.createTable(con, "testboolstring", "a varchar(30)");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         stmt.executeUpdate("INSERT INTO testboolstring VALUES('true')");
         stmt.executeUpdate("INSERT INTO testboolstring VALUES('false')");
@@ -182,7 +193,21 @@ public class ResultSetTest extends TestCase
 
     public void booleanTests(boolean useServerPrepare) throws SQLException
     {
-        java.sql.PreparedStatement pstmt = con.prepareStatement("insert into testbool values (?)");
+        // XC needs to change the query hence pstmt needs to be declared here
+        java.sql.PreparedStatement pstmt;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            pstmt = con.prepareStatement("insert into testbool (a) values (?)");
+        }
+        else
+        {
+        // END_PGXC
+        pstmt = con.prepareStatement("insert into testbool values (?)");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         if (useServerPrepare)
             ((org.postgresql.PGStatement)pstmt).setUseServerPrepare(true);
 
@@ -198,7 +223,21 @@ public class ResultSetTest extends TestCase
         pstmt.setObject(1, "True", java.sql.Types.BIT);
         pstmt.executeUpdate();
 
-        ResultSet rs = con.createStatement().executeQuery("select * from testbool");
+        // XC needs to change the query, rs has to be declared here
+        ResultSet rs;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = con.createStatement().executeQuery("select * from testbool order by i");
+        }
+        else
+        {
+        // END_PGXC
+        rs = con.createStatement().executeQuery("select * from testbool");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         for (int i = 0; i < 2; i++)
         {
             assertTrue(rs.next());
@@ -233,7 +272,18 @@ public class ResultSetTest extends TestCase
                       }
         */
 
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = con.createStatement().executeQuery("select * from testboolstring order by i");
+        }
+        else
+        {
+        // END_PGXC
         rs = con.createStatement().executeQuery("select * from testboolstring");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         for (int i = 0;i < 4; i++)
         {
