@@ -40,7 +40,7 @@ public class Jdbc3CallableStatementTest extends TestCase
         // BEGIN_PGXC
         if (TestUtil.isPGXC())
         {
-            createBitTab = createBitTab + " DISRIBUTE BY ROUNDROBIN";
+            createBitTab = createBitTab + " DISTRIBUTE BY ROUNDROBIN";
             stmt.execute("SET enforce_two_phase_commit TO false");
         }
         // END_PGXC
