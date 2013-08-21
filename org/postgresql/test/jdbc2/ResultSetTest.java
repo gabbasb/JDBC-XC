@@ -75,7 +75,19 @@ public class ResultSetTest extends TestCase
         stmt.executeUpdate(
             "INSERT INTO testboolstring VALUES('this is not true')");
 
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            TestUtil.createTable(con, "testnumeric", "a numeric, i serial");
+        }
+        else
+        {
+        // END_PGXC
         TestUtil.createTable(con, "testnumeric", "a numeric");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         stmt.executeUpdate("INSERT INTO testnumeric VALUES('1.0')");
         stmt.executeUpdate("INSERT INTO testnumeric VALUES('0.0')");
         stmt.executeUpdate("INSERT INTO testnumeric VALUES('-1.0')");
@@ -302,8 +314,20 @@ public class ResultSetTest extends TestCase
 
     public void testgetByte() throws SQLException
     {
-        ResultSet rs = con.createStatement().executeQuery(
-                           "select * from testnumeric");
+        // XC needs to change the query, rs has to be declared here
+        ResultSet rs;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = con.createStatement().executeQuery("select * from testnumeric order by i");
+        }
+        else
+        {
+        // END_PGXC
+        rs = con.createStatement().executeQuery("select * from testnumeric");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         assertTrue(rs.next());
         assertEquals(1, rs.getByte(1));
@@ -336,8 +360,20 @@ public class ResultSetTest extends TestCase
 
     public void testgetShort() throws SQLException
     {
-        ResultSet rs = con.createStatement().executeQuery(
-                           "select * from testnumeric");
+        // XC needs to change the query, rs has to be declared here
+        ResultSet rs;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = con.createStatement().executeQuery("select * from testnumeric order by i");
+        }
+        else
+        {
+        // END_PGXC
+        rs = con.createStatement().executeQuery("select * from testnumeric");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         assertTrue(rs.next());
         assertEquals(1, rs.getShort(1));
@@ -370,8 +406,20 @@ public class ResultSetTest extends TestCase
 
     public void testgetInt() throws SQLException
     {
-        ResultSet rs = con.createStatement().executeQuery(
-                           "select * from testnumeric");
+        // XC needs to change the query, rs has to be declared here
+        ResultSet rs;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = con.createStatement().executeQuery("select * from testnumeric order by i");
+        }
+        else
+        {
+        // END_PGXC
+        rs = con.createStatement().executeQuery("select * from testnumeric");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         assertTrue(rs.next());
         assertEquals(1, rs.getInt(1));
@@ -422,8 +470,20 @@ public class ResultSetTest extends TestCase
 
     public void testgetLong() throws SQLException
     {
-        ResultSet rs = con.createStatement().executeQuery(
-                           "select * from testnumeric");
+        // XC needs to change the query, rs has to be declared here
+        ResultSet rs;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = con.createStatement().executeQuery("select * from testnumeric order by i");
+        }
+        else
+        {
+        // END_PGXC
+        rs = con.createStatement().executeQuery("select * from testnumeric");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         assertTrue(rs.next());
         assertEquals(1, rs.getLong(1));
@@ -593,7 +653,22 @@ public class ResultSetTest extends TestCase
         // Test that illegal operations on a TYPE_FORWARD_ONLY resultset
         // correctly result in throwing an exception.
         Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-        ResultSet rs = stmt.executeQuery("SELECT * FROM testnumeric");
+
+        // XC needs to change the query, rs has to be declared here
+        ResultSet rs;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = stmt.executeQuery("select * from testnumeric order by i");
+        }
+        else
+        {
+        // END_PGXC
+        rs = stmt.executeQuery("select * from testnumeric");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
 
         try
         {
