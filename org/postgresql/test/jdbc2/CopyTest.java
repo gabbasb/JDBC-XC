@@ -56,7 +56,18 @@ public class CopyTest extends TestCase {
     protected void setUp() throws Exception {
         con = TestUtil.openDB();
 
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            TestUtil.createTable(con, "copytest", "stringvalue text, intvalue int, numvalue numeric(5,2), i serial");
+        }
+        else
+        {
+        // END_PGXC
         TestUtil.createTable(con, "copytest", "stringvalue text, intvalue int, numvalue numeric(5,2)");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
 
         copyAPI = ((PGConnection)con).getCopyAPI();
     }
@@ -76,7 +87,21 @@ public class CopyTest extends TestCase {
     }
     
     public void testCopyInByRow() throws SQLException {
-        String sql = "COPY copytest FROM STDIN";
+        // XC needs to change the query, so declare the variable here
+        String sql;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            sql = "COPY copytest (stringvalue, intvalue, numvalue) FROM STDIN";
+        }
+        else
+        {
+        // END_PGXC
+        sql = "COPY copytest FROM STDIN";
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         CopyIn cp = copyAPI.copyIn(sql);
         for(int i=0; i<origData.length; i++) {
             byte[] buf = origData[i].getBytes();
@@ -103,7 +128,21 @@ public class CopyTest extends TestCase {
     }
 
     public void testCopyInAsOutputStream() throws SQLException, IOException {
-        String sql = "COPY copytest FROM STDIN";
+        // XC needs to change the query, so declare the variable here
+        String sql;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            sql = "COPY copytest (stringvalue, intvalue, numvalue) FROM STDIN";
+        }
+        else
+        {
+        // END_PGXC
+        sql = "COPY copytest FROM STDIN";
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         OutputStream os = new PGCopyOutputStream((PGConnection)con, sql, 1000);
         for(int i=0; i<origData.length; i++) {
             byte[] buf = origData[i].getBytes();
@@ -115,14 +154,42 @@ public class CopyTest extends TestCase {
     }
 
     public void testCopyInFromInputStream() throws SQLException, IOException {
-        String sql = "COPY copytest FROM STDIN";
+        // XC needs to change the query, so declare the variable here
+        String sql;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            sql = "COPY copytest (stringvalue, intvalue, numvalue) FROM STDIN";
+        }
+        else
+        {
+        // END_PGXC
+        sql = "COPY copytest FROM STDIN";
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         copyAPI.copyIn(sql, new ByteArrayInputStream(getData(origData)), 3);
         int rowCount = getCount();
         assertEquals(dataRows, rowCount);
     }
 
     public void testCopyInFromStreamFail() throws SQLException {
-        String sql = "COPY copytest FROM STDIN";
+        // XC needs to change the query, so declare the variable here
+        String sql;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            sql = "COPY copytest (stringvalue, intvalue, numvalue) FROM STDIN";
+        }
+        else
+        {
+        // END_PGXC
+        sql = "COPY copytest FROM STDIN";
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         try {
             copyAPI.copyIn(sql, new InputStream() {
                 public int read() { throw new RuntimeException("COPYTEST"); }
@@ -136,14 +203,42 @@ public class CopyTest extends TestCase {
     }
 
     public void testCopyInFromReader() throws SQLException, IOException {
-        String sql = "COPY copytest FROM STDIN";
+        // XC needs to change the query, so declare the variable here
+        String sql;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            sql = "COPY copytest (stringvalue, intvalue, numvalue) FROM STDIN";
+        }
+        else
+        {
+        // END_PGXC
+        sql = "COPY copytest FROM STDIN";
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         copyAPI.copyIn(sql, new StringReader(new String(getData(origData))), 3);
         int rowCount = getCount();
         assertEquals(dataRows, rowCount);
     }
 
     public void testSkipping() {
-        String sql = "COPY copytest FROM STDIN";
+        // XC needs to change the query, so declare the variable here
+        String sql;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            sql = "COPY copytest (stringvalue, intvalue, numvalue) FROM STDIN";
+        }
+        else
+        {
+        // END_PGXC
+        sql = "COPY copytest FROM STDIN";
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         String at = "init";
         int rowCount = -1;
         int skip = 0;
@@ -169,7 +264,22 @@ public class CopyTest extends TestCase {
     
     public void testCopyOutByRow() throws SQLException, IOException {
         testCopyInByRow(); // ensure we have some data.
-        String sql = "COPY copytest TO STDOUT";
+
+        // XC needs to change the query, so declare the variable here
+        String sql;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            sql = "COPY (select stringvalue, intvalue, numvalue from copytest order by i) TO STDOUT";
+        }
+        else
+        {
+        // END_PGXC
+        sql = "COPY copytest TO STDOUT";
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         CopyOut cp = copyAPI.copyOut(sql);
         int count = 0;
         byte buf[];
@@ -191,7 +301,21 @@ public class CopyTest extends TestCase {
 
     public void testCopyOut() throws SQLException, IOException {
         testCopyInByRow(); // ensure we have some data.
-        String sql = "COPY copytest TO STDOUT";
+        // XC needs to change the query, so declare the variable here
+        String sql;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            sql = "COPY (select stringvalue, intvalue, numvalue from copytest order by i) TO STDOUT";
+        }
+        else
+        {
+        // END_PGXC
+        sql = "COPY copytest TO STDOUT";
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         ByteArrayOutputStream copydata = new ByteArrayOutputStream();
         copyAPI.copyOut(sql, copydata);
         assertEquals(dataRows, getCount());
@@ -231,10 +355,25 @@ public class CopyTest extends TestCase {
 
     public void testStatementCopyIn() throws SQLException {
         Statement stmt = con.createStatement();
+
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            try {
+                stmt.execute("COPY copytest (stringvalue, intvalue, numvalue) FROM STDIN");
+                fail("Should have failed because copy doesn't work from a Statement.");
+            } catch (SQLException sqle) { }
+        }
+        else
+        {
+        // END_PGXC
         try {
             stmt.execute("COPY copytest FROM STDIN");
             fail("Should have failed because copy doesn't work from a Statement.");
         } catch (SQLException sqle) { }
+        // BEGIN_PGXC
+        }
+        // END_PGXC
         stmt.close();
 
         assertEquals(0, getCount());
@@ -244,10 +383,25 @@ public class CopyTest extends TestCase {
         testCopyInByRow(); // ensure we have some data.
 
         Statement stmt = con.createStatement();
+
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            try {
+                stmt.execute("COPY (select stringvalue, intvalue, numvalue from copytest order by i) TO STDOUT");
+                fail("Should have failed because copy doesn't work from a Statement.");
+            } catch (SQLException sqle) { }
+        }
+        else
+        {
+        // END_PGXC
         try {
             stmt.execute("COPY copytest TO STDOUT");
             fail("Should have failed because copy doesn't work from a Statement.");
         } catch (SQLException sqle) { }
+        // BEGIN_PGXC
+        }
+        // END_PGXC
         stmt.close();
 
         assertEquals(dataRows, getCount());
