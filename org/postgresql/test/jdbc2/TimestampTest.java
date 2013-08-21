@@ -37,9 +37,22 @@ public class TimestampTest extends TestCase
     protected void setUp() throws Exception
     {
         con = TestUtil.openDB();
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            TestUtil.createTable(con, TSWTZ_TABLE, "ts timestamp with time zone, i serial");
+            TestUtil.createTable(con, TSWOTZ_TABLE, "ts timestamp without time zone, i serial");
+            TestUtil.createTable(con, DATE_TABLE, "ts date, i serial");
+        }
+        else
+        {
+        // END_PGXC
         TestUtil.createTable(con, TSWTZ_TABLE, "ts timestamp with time zone");
         TestUtil.createTable(con, TSWOTZ_TABLE, "ts timestamp without time zone");
         TestUtil.createTable(con, DATE_TABLE, "ts date");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
     }
 
     protected void tearDown() throws Exception
@@ -75,7 +88,22 @@ public class TimestampTest extends TestCase
 
         ps.close();
         Statement stmt = con.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT ts FROM " + TSWOTZ_TABLE);
+
+        // XC needs to change the query, rs has to be declared here
+        ResultSet rs;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = stmt.executeQuery("SELECT ts FROM " + TSWOTZ_TABLE + " order by i");
+        }
+        else
+        {
+        // END_PGXC
+        rs = stmt.executeQuery("SELECT ts FROM " + TSWOTZ_TABLE);
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         assertTrue(rs.next());
 
         rs.getDate(1, cal);
@@ -130,6 +158,7 @@ public class TimestampTest extends TestCase
         ps.close();
 
         stmt = con.createStatement();
+
         ResultSet rs = stmt.executeQuery("select ts from " + table);
         while (rs.next()) {
             assertEquals(strValue, rs.getString(1));
@@ -413,7 +442,19 @@ public class TimestampTest extends TestCase
         ResultSet rs;
         java.sql.Timestamp t;
 
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = stmt.executeQuery("select ts from " + TSWTZ_TABLE + " order by i"); //removed the order by ts
+        }
+        else
+        {
+        // END_PGXC
         rs = stmt.executeQuery("select ts from " + TSWTZ_TABLE); //removed the order by ts
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         assertNotNull(rs);
 
         for (int i = 0; i < 3; i++)
@@ -496,7 +537,19 @@ public class TimestampTest extends TestCase
         ResultSet rs;
         java.sql.Timestamp t;
 
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = stmt.executeQuery("select ts from " + TSWOTZ_TABLE + " order by i"); //removed the order by ts
+        }
+        else
+        {
+        // END_PGXC
         rs = stmt.executeQuery("select ts from " + TSWOTZ_TABLE); //removed the order by ts
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         assertNotNull(rs);
 
         for (int i = 0; i < 3; i++)
