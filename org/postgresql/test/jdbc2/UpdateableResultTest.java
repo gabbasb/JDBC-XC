@@ -363,7 +363,30 @@ public class UpdateableResultTest extends TestCase
         {
         }
 
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            // updateable is a replicated table created with OIDs
+            // Its rows would have a different oids on each of the datanodes
+            // It is therefore illegal in XC to base an update
+            // of a replicated table on oid.
+            // Having the first column of the following select query as oid
+            // means that rs.updateRow() would send a query
+            // UPDATE updateable SET  "name" = $1 WHERE "oid" = $2
+            // which would fail because the oid was selected
+            // from the primary node would not exist on the
+            // rest of the nodes. We therefore base the
+            // update on id, rather than oid by omitting oid from the select target
+            rs = st.executeQuery("select * from updateable");
+        }
+        else
+        {
+        // END_PGXC
         rs = st.executeQuery("select oid,* from updateable");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         assertTrue(rs.first());
         rs.updateInt( "id", 3 );
         rs.updateString( "name", "dave3");
