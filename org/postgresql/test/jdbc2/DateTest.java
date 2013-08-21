@@ -29,7 +29,18 @@ public class DateTest extends TestCase
     protected void setUp() throws Exception
     {
         con = TestUtil.openDB();
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            TestUtil.createTable(con, "testdate", "dt date, i serial");
+        }
+        else
+        {
+        // END_PGXC
         TestUtil.createTable(con, "testdate", "dt date");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
     }
 
     protected void tearDown() throws Exception
@@ -151,7 +162,19 @@ public class DateTest extends TestCase
         ResultSet rs;
         java.sql.Date d;
 
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = st.executeQuery(TestUtil.selectSQL("testdate", "dt", null, "order by i"));
+        }
+        else
+        {
+        // END_PGXC
         rs = st.executeQuery(TestUtil.selectSQL("testdate", "dt"));
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         assertNotNull(rs);
 
         assertTrue(rs.next());
