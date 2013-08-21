@@ -32,7 +32,19 @@ public class TimeTest extends TestCase
     protected void setUp() throws Exception
     {
         con = TestUtil.openDB();
+
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            TestUtil.createTempTable(con, "testtime", "tm time, tz time with time zone, i serial");
+        }
+        else
+        {
+        // END_PGXC
         TestUtil.createTempTable(con, "testtime", "tm time, tz time with time zone");
+        // BEGIN_PGXC
+        }
+        // END_PGXC
     }
 
     protected void tearDown() throws Exception
@@ -63,7 +75,22 @@ public class TimeTest extends TestCase
         assertEquals(1, stmt.executeUpdate(TestUtil.insertSQL("testtime", "'00:00:00','00:00:00'")));
         assertEquals(1, stmt.executeUpdate(TestUtil.insertSQL("testtime", "'00:00:00.1','00:00:00.01'")));
         assertEquals(1, stmt.executeUpdate(TestUtil.insertSQL("testtime", "CAST(CAST(now() AS timestamp without time zone) AS time),now()")));
-        ResultSet rs = stmt.executeQuery(TestUtil.selectSQL("testtime", "tm,tz"));
+
+        // XC needs to change the query, rs has to be declared here
+        ResultSet rs;
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = stmt.executeQuery(TestUtil.selectSQL("testtime", "tm,tz", null, "order by i"));
+        }
+        else
+        {
+        // END_PGXC
+        rs = stmt.executeQuery(TestUtil.selectSQL("testtime", "tm,tz"));
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         assertNotNull(rs);
         assertTrue(rs.next());
 
@@ -213,7 +240,19 @@ public class TimeTest extends TestCase
         ResultSet rs;
         java.sql.Time t;
 
+        // BEGIN_PGXC
+        if (TestUtil.isPGXC())
+        {
+            rs = st.executeQuery(TestUtil.selectSQL("testtime", "tm", null, "order by i"));
+        }
+        else
+        {
+        // END_PGXC
         rs = st.executeQuery(TestUtil.selectSQL("testtime", "tm"));
+        // BEGIN_PGXC
+        }
+        // END_PGXC
+
         assertNotNull(rs);
 
         assertTrue(rs.next());
